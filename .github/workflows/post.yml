@@ -1,0 +1,94 @@
+name: LexiNode explainer Reel
+
+# Posts one animated explainer Reel per run.
+#  - evening run (19:10 IST): always
+#  - morning run (09:00 IST): only after you set the repository variable SECOND_POST = on
+#    (start with ONE post a day for the first 1-2 weeks of a new account, then switch it on)
+on:
+  schedule:
+    - cron: "40 13 * * *"
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Optional topic (empty = random from the built-in list)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Make the video but do NOT post it (use this for the first test)"
+        type: boolean
+        default: true
+      diagnose:
+        description: "Only check the Instagram token and publish quota"
+        type: boolean
+        default: false
+
+concurrency:
+  group: lexinode-post
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    if: github.event_name != 'schedule' || github.event.schedule != '30 3 * * *' || vars.SECOND_POST == 'on'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_UPLOAD_PRESET: ${{ secrets.CLOUDINARY_UPLOAD_PRESET }}
+      IG_HANDLE: ${{ vars.IG_HANDLE }}
+      BRAND_NAME: ${{ vars.BRAND_NAME }}
+      BRAND_MARK: ${{ vars.BRAND_MARK }}
+      EXPLAIN_VOICE: ${{ vars.EXPLAIN_VOICE }}
+      EXPLAIN_RATE: ${{ vars.EXPLAIN_RATE }}
+      EXPLAIN_VOICE_TEXT: ${{ vars.EXPLAIN_VOICE_TEXT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+
+      - name: Check token and quota
+        if: ${{ inputs.diagnose }}
+        run: python core.py --diagnose
+
+      - name: Install ffmpeg and fonts
+        if: ${{ !inputs.diagnose }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-inter fonts-dejavu-core
+
+      - name: Make and post the Reel
+        if: ${{ !inputs.diagnose }}
+        env:
+          INPUT_TOPIC: ${{ inputs.topic }}
+          INPUT_DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          ARGS=""
+          if [ "$INPUT_DRY" = "true" ]; then ARGS="--dry-run"; fi
+          for attempt in 1 2 3; do
+            if python explainer.py $ARGS --topic "$INPUT_TOPIC"; then exit 0; fi
+            echo "attempt $attempt failed"; sleep 30
+          done
+          exit 1
+
+      - name: Keep the video and caption (14 days)
+        if: ${{ always() && !inputs.diagnose }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lexinode-output
+          path: output/
+          retention-days: 14
+          if-no-files-found: ignore
