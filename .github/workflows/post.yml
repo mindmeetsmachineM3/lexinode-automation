@@ -52,6 +52,7 @@ jobs:
       GEMINI_TTS_MODEL: ${{ vars.GEMINI_TTS_MODEL }}
       GEMINI_TTS_STYLE: ${{ vars.GEMINI_TTS_STYLE }}
       EXPLAIN_SPEED: ${{ vars.EXPLAIN_SPEED }}
+      SERIES_SHARE: ${{ vars.SERIES_SHARE }}
     steps:
       - uses: actions/checkout@v4
 
