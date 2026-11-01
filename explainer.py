@@ -781,7 +781,7 @@ def series_block(part):
 
 
 
-def validate(spec, max_words=215):
+def validate(spec, max_words=215, strict=True):
     if not isinstance(spec, dict) or not isinstance(spec.get("scenes"), list):
         raise ValueError("no scenes")
     out = []
@@ -798,9 +798,15 @@ def validate(spec, max_words=215):
         except Exception:
             sc["section"] = 0
         out.append(sc)
-    if len(out) < 8:
-        raise ValueError(f"only {len(out)} usable scenes")
+    if len(out) < (10 if strict else 8):
+        raise ValueError(f"only {len(out)} usable scenes; use 11-17 scenes")
     words = sum(len(x["say"].split()) for x in out)
+    if strict and words < 105:
+        raise ValueError(f"voice-over too short ({words} words); the video would be under 45 seconds, add more teaching scenes")
+    hin = set("hai hain ka ki ke ko me mein se par pe aur kya kyu kyun jab toh to nahi nahin karo karta karte karti hota hoti hote ye yeh wo woh ab agar lekin bhi iska uska hum aap tum".split())
+    hits = sum(1 for x in out if hin & set(re.findall(r"[a-z]+", x["sub"].lower())))
+    if strict and hits < 0.6 * len(out):
+        raise ValueError("the subtitles ('sub') must be Roman HINGLISH (Hindi words in Latin letters like 'Jab user request bhejta hai, server cache check karta hai'), not plain English")
     if words > max_words:
         raise ValueError(f"voice-over too long ({words} words); the limit is about {max_words - 25} words, so use fewer and shorter scenes")
     if out[0]["visual"]["type"] != "question":
@@ -1154,7 +1160,7 @@ def main():
     OUT_DIR.mkdir(exist_ok=True)
     stamp = time.strftime("%Y%m%d_%H%M")
     if args.sample:
-        spec = validate(json.loads(json.dumps(SAMPLE)))
+        spec = validate(json.loads(json.dumps(SAMPLE)), strict=False)
     else:
         import core as M
         state = load_state()
