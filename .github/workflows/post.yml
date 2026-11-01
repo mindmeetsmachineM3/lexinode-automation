@@ -1,13 +1,12 @@
 name: LexiNode explainer Reel
 
-# Posts one animated explainer Reel per run.
-#  - evening run (19:10 IST): always
-#  - morning run (09:00 IST): only after you set the repository variable SECOND_POST = on
-#    (start with ONE post a day for the first 1-2 weeks of a new account, then switch it on)
+# Posts one animated explainer Reel per run, 3 runs a day (IST):
+#   morning 08:37, afternoon 13:07, evening 19:10
 on:
   schedule:
+    - cron: "7 3 * * *"
+    - cron: "37 7 * * *"
     - cron: "40 13 * * *"
-    - cron: "30 3 * * *"
   workflow_dispatch:
     inputs:
       topic:
@@ -32,7 +31,6 @@ permissions:
 
 jobs:
   post:
-    if: github.event_name != 'schedule' || github.event.schedule != '30 3 * * *' || vars.SECOND_POST == 'on'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
