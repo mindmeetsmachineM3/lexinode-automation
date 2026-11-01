@@ -1,0 +1,22 @@
+{
+ "used": [
+  {
+   "topic": "High-Throughput Webhook Processor",
+   "cat": "Automation and scripting",
+   "date": "2026-11-01",
+   "parts": 2
+  }
+ ],
+ "pending": {
+  "topic": "High-Throughput Webhook Processor",
+  "title": "High-Throughput Webhook Processor",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Part 1: Diagram receiving webhooks, verifying HMAC signatures, and immediately returning a 200 OK by pushing payloads to an event stream—but how do you process downstream failures?",
+   "Part 2: Detail how worker scripts implement exponential backoff retries, dead-letter storage, and event deduplication tables to maintain data integrity during downstream outages."
+  ],
+  "cat": "Automation and scripting",
+  "ts": 1793543112.4908187
+ }
+}
