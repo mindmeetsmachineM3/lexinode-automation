@@ -73,12 +73,14 @@ PROMPT = """You are a senior Indian software engineer and teacher who makes vira
 for engineering students and working developers. Make ONE explainer script for this topic:
 
 TOPIC: {topic}
-
+{series}
 FORMAT of the video (75-95 seconds, vertical, light theme, animated diagrams, voice-over in natural Hinglish):
  scene 1 = the interview-question hook, e.g. "Agar interviewer aapse puche: caching kya hai aur ye database performance kaise improve karti hai?"
  then: the problem -> the core idea -> how it works step by step -> numbers/comparison -> a tiny real code or config example (only if it fits)
  -> the trade-off / common mistake -> the one-line answer to say in the interview -> recap -> outro (save / comment / follow).
-Use 14-17 scenes and keep the TOTAL voice-over under 190 words (about 80 seconds). Short and punchy beats long. Open a loop early ("last me ek galti batata hoon jo bahut log karte hain") and pay it off near the end.
+Use 14-17 scenes and keep the TOTAL voice-over under 190 words (about 80 seconds), unless the SERIES block above gives different limits. Short and punchy beats long. Open a loop early ("last me ek galti batata hoon jo bahut log karte hain") and pay it off near the end.
+Never spend a whole scene only on a teaser or filler (no "Open Loop" / "Preview" / "Revealed at end" cards): say the teaser sentence inside a scene that already explains something, or reuse the previous scene's visual with a new focus. Every scene must teach one concrete fact.
+The caption must not mention the video length or the words "reel" / "post".
 
 LANGUAGE RULES
  - "say" = the voice-over sentence (8-22 words), friendly Hinglish like a senior dev talking to a junior: Hindi grammar + English tech terms.
@@ -532,12 +534,17 @@ def v_outro(d, v, t, persist, S):
     text_c(d, 360, y + 38, BRAND_MARK, font("black", 60), mix((255, 255, 255), a))
     text_c(d, 360, y + 170, BRAND, font("black", 34), mix(INK, a))
     text_c(d, 360, y + 218, f"@{HANDLE}", font("semi", 26), mix(ACC, a))
+    nxt = str(v.get("next", "")).strip()
+    if nxt:
+        fn_, ln_ = fit_lines(d, "NEXT > " + nxt, "monob", 19, 600, 1, 13)
+        d.rounded_rectangle((360 - tw(d, ln_[0], fn_) / 2 - 16, y + 252, 360 + tw(d, ln_[0], fn_) / 2 + 16, y + 284), 16, fill=mix(tint(ACC, 0.12), a))
+        text_c(d, 360, y + 257, ln_[0], fn_, mix(ACC, a))
     ask = str(v.get("ask", ""))
     if ask:
         a2, dy2 = reveal(t, 1, persist, step=0.5)
         f, ls = fit_lines(d, ask, "bold", 30, 540, 3, 22)
         bh = len(ls) * int(f.size * 1.35) + 64
-        y2 = y + 290 + dy2
+        y2 = y + (304 if nxt else 290) + dy2
         rrect(d, (60, y2, 660, y2 + bh), 20, fill=mix(SOFT, a2), outline=mix(LINE, a2), width=2)
         d.text((84, y2 + 14), "COMMENT BELOW", font=font("monob", 17), fill=mix(ACC, a2))
         for j, s in enumerate(ls):
@@ -589,6 +596,8 @@ def draw_frame(spec, idx, t, gt, total, persist):
     # header + progress
     d.text((36, 34), f"{BRAND} / EXPLAINED", font=font("monob", 15), fill=MUTE)
     tag = str(spec.get("tag", "TECH")).upper()[:22]
+    if spec.get("part"):
+        tag = f"PART {spec['part'][0]}/{spec['part'][1]}"
     d.text((W - 36 - tw(d, tag, font("monob", 15)), 34), tag, font=font("monob", 15), fill=MUTE)
     d.line((36, 66, W - 36, 66), fill=LINE, width=2)
     d.line((36, 66, 36 + (W - 72) * min(1.0, gt / max(total, 0.1)), 66), fill=ACC, width=3)
@@ -642,7 +651,137 @@ def clean_json(raw):
     return json.loads(raw[a:b + 1])
 
 
-def validate(spec):
+# ------------------------------------------------------------------ memory + topic planner (never repeat, long topics become series)
+STATE_FILE = BASE / "state.json"
+CATEGORIES = ["System design", "DSA and problem solving", "Backend and APIs", "Databases and SQL", "AI and LLMs",
+              "Automation and scripting", "DevOps, cloud and Docker", "Coding tips and clean code", "Security basics for developers",
+              "Frontend and web performance", "Computer science fundamentals (OS, networking)", "Git and developer workflow"]
+SERIES_SHARE = float(os.getenv("SERIES_SHARE") or 0.5)      # chance that a big topic is made as a 2-3 part series
+
+PLAN_PROMPT = """You plan Instagram Reels for LexiNode.ai (software interview and engineering explainers for Indian students and developers).
+Category for the next video: {cat}
+
+Suggest 8 NEW, specific topics in this category. Each topic must be something an interviewer could ask, and be explainable with diagrams.
+Mix levels: some basic, some intermediate. Avoid anything similar to these ALREADY USED topics: {used}
+
+For each topic decide "parts":
+ - 1 = fits a tight 60-80 second video.
+ - 2 or 3 = a big topic (for example "Design a URL shortener", "How Kafka works end to end", "Full JWT auth flow", "How a database index really works").
+   Then give "outline": one line per part. Every part must be useful on its own and end with a hook for the next part.
+Return ONLY JSON:
+{{"ideas":[{{"topic":"<short topic>","question":"<the interview question>","parts":1,"outline":["<one line per part>"]}}]}}
+"""
+
+
+def load_state():
+    try:
+        d = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        d = {}
+    d.setdefault("used", [])
+    d.setdefault("pending", None)
+    return d
+
+
+def save_state(d):
+    d["used"] = d["used"][-300:]
+    STATE_FILE.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def _tok(t):
+    return set(w for w in re.findall(r"[a-z0-9+#]{3,}", t.lower()) if w not in {"the", "and", "for", "how", "what", "why", "with", "vs", "explained"})
+
+
+def too_similar(topic, used_topics):
+    a = _tok(topic)
+    for u in used_topics:
+        b = _tok(u)
+        if a and b and len(a & b) / max(1, min(len(a), len(b))) >= 0.67:
+            return True
+    return False
+
+
+def pick_category(state):
+    last = {}
+    for i, u in enumerate(state["used"]):
+        last[u.get("cat")] = i
+    return min(CATEGORIES, key=lambda c: (last.get(c, -1), random.random()))
+
+
+def plan_next(state):
+    """-> (topic, part dict or None, category). Continues a pending series, else plans a brand-new topic."""
+    pend = state.get("pending")
+    if pend:
+        age = (time.time() - pend.get("ts", 0)) / 86400
+        if age <= 2.5 and pend.get("next", 2) <= pend.get("n", 1):
+            return pend["topic"], {"k": pend["next"], "n": pend["n"], "title": pend["title"], "outline": pend["outline"]}, pend.get("cat", "")
+        state["pending"] = None                     # old series: drop it
+    used_topics = [u["topic"] for u in state["used"]]
+    cat = pick_category(state)
+    ideas = []
+    try:
+        import core as M
+        data = clean_json(M.call_gemini(PLAN_PROMPT.format(cat=cat, used="; ".join(used_topics[-60:]) or "none")))
+        for it in data.get("ideas", []):
+            t = str(it.get("topic", "")).strip()
+            if t and not too_similar(t, used_topics):
+                n = it.get("parts", 1)
+                n = n if isinstance(n, int) and 1 <= n <= 3 else 1
+                outline = [str(x) for x in (it.get("outline") or [])][:n]
+                if n > 1 and len(outline) < n:
+                    n = 1
+                ideas.append({"topic": t, "question": str(it.get("question", "")), "n": n, "outline": outline})
+    except Exception as ex:
+        print(f"topic planner failed ({str(ex)[:120]}); using the built-in list", file=sys.stderr)
+    if not ideas:
+        pool = [x for x in SEEDS if not too_similar(x, used_topics)] or SEEDS
+        return random.choice(pool), None, "Built-in"
+    multi = [i for i in ideas if i["n"] > 1]
+    pick = random.choice(multi) if (multi and random.random() < SERIES_SHARE) else random.choice([i for i in ideas if i["n"] == 1] or ideas)
+    if pick["n"] > 1:
+        return pick["topic"], {"k": 1, "n": pick["n"], "title": pick["topic"], "outline": pick["outline"]}, cat
+    return pick["topic"], None, cat
+
+
+def record_posted(state, topic, part, cat):
+    """Call only after a successful post."""
+    day = time.strftime("%Y-%m-%d")
+    if part is None:
+        state["used"].append({"topic": topic, "cat": cat, "date": day, "parts": 1})
+        state["pending"] = None
+        return
+    if part["k"] == 1:
+        state["used"].append({"topic": part["title"], "cat": cat, "date": day, "parts": part["n"]})
+    if part["k"] < part["n"]:
+        state["pending"] = {"topic": topic, "title": part["title"], "n": part["n"], "next": part["k"] + 1,
+                            "outline": part["outline"], "cat": cat, "ts": time.time()}
+    else:
+        state["pending"] = None
+
+
+def series_block(part):
+    if not part or part["n"] <= 1:
+        return "SERIES: none. This is a single, complete video."
+    k, n, title = part["k"], part["n"], part["title"]
+    outline = "\n".join(f"   Part {i + 1}: {t}" for i, t in enumerate(part["outline"]))
+    s = (f'SERIES: this video is PART {k} of {n} of the series "{title}".\n Series outline:\n{outline}\n'
+         f' Cover ONLY part {k}. Use 11-14 scenes and keep the TOTAL voice-over under 150 words (about 60 seconds) for this part.\n'
+         f' - Keep "title" = "{title}" (same in every part).\n')
+    if k == 1:
+        s += ' - Scene 1: the interview question for the WHOLE topic, then teach only part 1.\n'
+    else:
+        s += (f' - Scene 1 (question visual): start the text with "Part {k}:" and the question this part answers. '
+              f'The first voice-over sentence is a one-line recap of the previous part, then continue.\n')
+    if k < n:
+        s += (f' - The last teaching scene ends with a teaser for part {k + 1} (what comes next, as a question or cliffhanger).\n'
+              f' - The outro visual gets an extra field "next":"Part {k + 1}: <short title of part {k + 1}>" and the voice-over says to follow so they do not miss part {k + 1}.\n')
+    else:
+        s += ' - This is the FINAL part: finish with the one-line answer for the interview and a recap, then the outro.\n'
+    return s
+
+
+
+def validate(spec, max_words=215):
     if not isinstance(spec, dict) or not isinstance(spec.get("scenes"), list):
         raise ValueError("no scenes")
     out = []
@@ -662,8 +801,8 @@ def validate(spec):
     if len(out) < 8:
         raise ValueError(f"only {len(out)} usable scenes")
     words = sum(len(x["say"].split()) for x in out)
-    if words > 215:
-        raise ValueError(f"voice-over too long ({words} words); the total must be under 190 words, so use fewer and shorter scenes")
+    if words > max_words:
+        raise ValueError(f"voice-over too long ({words} words); the limit is about {max_words - 25} words, so use fewer and shorter scenes")
     if out[0]["visual"]["type"] != "question":
         raise ValueError("first scene is not the interview question")
     # outro only at the end
@@ -678,15 +817,21 @@ def validate(spec):
     return spec
 
 
-def gen_spec(topic, recent):
+def gen_spec(topic, recent, part=None):
     import core as M
-    prompt = PROMPT.format(topic=topic, sections=SECTION_HINT, recent="; ".join(r[:60] for r in recent[:12]) or "none")
+    series = series_block(part)
+    prompt = PROMPT.format(topic=topic, series=series, sections=SECTION_HINT, recent="; ".join(r[:60] for r in recent[:15]) or "none")
+    limit = 175 if (part and part["n"] > 1) else 215
     fb = ""
     last = None
     for attempt in range(3):
         try:
             raw = M.call_gemini(prompt + fb)
-            return validate(clean_json(raw))
+            spec = validate(clean_json(raw), max_words=limit)
+            if part and part["n"] > 1:
+                spec["part"] = [part["k"], part["n"]]
+                spec["title"] = str(part["title"])[:40]
+            return spec
         except Exception as ex:
             last = ex
             fb = f"\n\nYour previous reply was rejected ({ex}). Return ONLY valid JSON following the schema exactly; scene 1 must be type question, last scene type outro."
@@ -854,6 +999,18 @@ def _find_cuts(path, spec, total):
         ok = all(0.4 * (w[i] / sum(w) * total) <= edges[i + 1] - edges[i] <= 2.5 * (w[i] / sum(w) * total) + 1.0 for i in range(n))
         if ok:
             return cuts
+    sil = _silences(path, -30, 0.10) or _silences(path, -26, 0.08)
+    snapped, used = [], 0
+    for c in cum:
+        best = min(sil, key=lambda x: abs((x[0] + x[1]) / 2 - c), default=None)
+        if best is not None and abs((best[0] + best[1]) / 2 - c) <= 1.3:
+            snapped.append((best[0] + best[1]) / 2)
+            used += 1
+        else:
+            snapped.append(c)
+    if all(snapped[i] < snapped[i + 1] - 1.0 for i in range(len(snapped) - 1)):
+        print(f"scene cuts: word-count estimate snapped to pauses ({used}/{len(cum)})", file=sys.stderr)
+        return snapped
     print("scene cuts: using word-count estimate", file=sys.stderr)
     return cum
 
@@ -966,9 +1123,14 @@ def render(spec, durs, audio, out_path, preview_dir=None):
 def build_caption(spec):
     cap = str(spec.get("caption", "")).strip()
     cq = str(spec.get("comment_q") or "").strip()
+    pt = spec.get("part")
+    if pt:
+        cap = f"(Part {pt[0]}/{pt[1]}) " + cap
     parts = [cap]
     if cq:
         parts.append(f"{cq} Comment down below 👇")
+    if pt and pt[0] < pt[1]:
+        parts.append(f"Part {pt[0] + 1} aa raha hai 👀 Follow karo taaki miss na ho.")
     parts.append("Save karo interview se pehle 🔖 Share karo apne dev dost ko 🤝")
     parts.append(f"Follow @{HANDLE} for daily coding, system design, AI & automation.")
     tags = spec.get("hashtags") or []
@@ -995,10 +1157,14 @@ def main():
         spec = validate(json.loads(json.dumps(SAMPLE)))
     else:
         import core as M
-        recent = [c.split("\n")[0][:80] for c in M.ig_recent_captions(25)]
-        topic = args.topic or random.choice(SEEDS)
-        print("TOPIC:", topic, file=sys.stderr)
-        spec = gen_spec(topic, recent)
+        state = load_state()
+        recent = [u["topic"] for u in state["used"][-40:]] + [c.split("\n")[0][:80] for c in M.ig_recent_captions(25)]
+        if args.topic:
+            topic, part, cat = args.topic, None, "Manual"
+        else:
+            topic, part, cat = plan_next(state)
+        print(f"TOPIC: {topic} | category: {cat} | part: {part and (str(part['k']) + '/' + str(part['n']))}", file=sys.stderr)
+        spec = gen_spec(topic, recent, part)
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         durs, audio, voice = build_audio(spec, tmp, fake=args.sample)
@@ -1015,9 +1181,20 @@ def main():
     if args.dry_run or args.sample:
         return
     import core as M
-    url = M.upload_video(str(out))
-    mid = M.publish(url, cap, reel=True)
+    try:
+        url = M.upload_video(str(out))
+        mid = M.publish(url, cap, reel=True)
+    except Exception as ex:
+        msg = str(ex)
+        print(f"POST FAILED: {msg[:400]}", file=sys.stderr)
+        if "190" in msg or "OAuth" in msg or "access token" in msg.lower():
+            print("-> The Instagram token is not valid. Check the secrets IG_ACCESS_TOKEN (long text starting with IGAA...) "
+                  "and IG_USER_ID (digits only). Generate a new token in the Meta dashboard and paste it again.", file=sys.stderr)
+        sys.exit(3)                       # 3 = do not retry (the video itself is fine)
     print(f"POSTED explainer Reel: {mid}", file=sys.stderr)
+    if not args.topic:
+        record_posted(state, topic, part, cat)
+        save_state(state)
 
 
 if __name__ == "__main__":
