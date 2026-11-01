@@ -78,7 +78,7 @@ FORMAT of the video (75-95 seconds, vertical, light theme, animated diagrams, vo
  scene 1 = the interview-question hook, e.g. "Agar interviewer aapse puche: caching kya hai aur ye database performance kaise improve karti hai?"
  then: the problem -> the core idea -> how it works step by step -> numbers/comparison -> a tiny real code or config example (only if it fits)
  -> the trade-off / common mistake -> the one-line answer to say in the interview -> recap -> outro (save / comment / follow).
-Use 15-19 scenes. Open a loop early ("last me ek galti batata hoon jo bahut log karte hain") and pay it off near the end.
+Use 14-17 scenes and keep the TOTAL voice-over under 190 words (about 80 seconds). Short and punchy beats long. Open a loop early ("last me ek galti batata hoon jo bahut log karte hain") and pay it off near the end.
 
 LANGUAGE RULES
  - "say" = the voice-over sentence (8-22 words), friendly Hinglish like a senior dev talking to a junior: Hindi grammar + English tech terms.
@@ -661,6 +661,9 @@ def validate(spec):
         out.append(sc)
     if len(out) < 8:
         raise ValueError(f"only {len(out)} usable scenes")
+    words = sum(len(x["say"].split()) for x in out)
+    if words > 215:
+        raise ValueError(f"voice-over too long ({words} words); the total must be under 190 words, so use fewer and shorter scenes")
     if out[0]["visual"]["type"] != "question":
         raise ValueError("first scene is not the interview question")
     # outro only at the end
@@ -705,11 +708,11 @@ def audio_len(p):
 
 
 def speak(text_dev, text_rom, out):
-    """edge-tts, Hindi voice reading Devanagari+English terms (natural Indian accent); falls back to Roman text."""
+    """edge-tts fallback: Hindi voice reading Devanagari+English terms; falls back to Roman text / other voices."""
     import edge_tts
     voices = [VOICE] + [v for v in VOICE_BACKUP if v != VOICE]
     texts = [text_dev, text_rom] if VOICE_TEXT == "devanagari" else [text_rom, text_dev]
-    for vi, voice in enumerate(voices):
+    for voice in voices:
         for txt in texts:
             if not txt:
                 continue
@@ -722,23 +725,147 @@ def speak(text_dev, text_rom, out):
     return None
 
 
-def build_audio(spec, tmp, fake=False):
-    """One clip per scene -> scene durations; returns (durations, wav path)."""
-    durs, wavs = [], []
-    used = None
+# ---- Gemini TTS (free tier): far more natural than edge-tts, understands Hindi / Hinglish
+TTS = (os.getenv("EXPLAIN_TTS") or "gemini").lower()                 # gemini | edge
+GTTS_VOICE = os.getenv("GEMINI_TTS_VOICE") or "Charon"               # Charon, Kore, Orus, Puck, Fenrir, Aoede, Leda, Zephyr ...
+GTTS_MODELS = [m for m in dict.fromkeys([os.getenv("GEMINI_TTS_MODEL") or "", "gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"]) if m]
+GTTS_LEGACY = ["gemini-2.5-flash-preview-tts"]
+GTTS_STYLE = os.getenv("GEMINI_TTS_STYLE") or "friendly, natural and conversational, like a young Indian software engineer explaining to a friend; relaxed, medium pace"
+API = "https://generativelanguage.googleapis.com/v1beta"
+
+
+def _find_audio(o):
+    if isinstance(o, dict):
+        if o.get("type") == "audio" and isinstance(o.get("data"), str):
+            return o["data"]
+        if isinstance(o.get("inlineData"), dict) and isinstance(o["inlineData"].get("data"), str):
+            return o["inlineData"]["data"]
+        if isinstance(o.get("inline_data"), dict) and isinstance(o["inline_data"].get("data"), str):
+            return o["inline_data"]["data"]
+        for v in o.values():
+            r = _find_audio(v)
+            if r:
+                return r
+    elif isinstance(o, list):
+        for v in reversed(o):
+            r = _find_audio(v)
+            if r:
+                return r
+    return None
+
+
+def _save_audio(b64, out):
+    import base64
+    import wave
+    raw = base64.b64decode(b64)
+    if raw[:4] == b"RIFF":
+        Path(out).write_bytes(raw)
+    else:                                   # raw 24 kHz 16-bit mono PCM
+        with wave.open(str(out), "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(24000)
+            w.writeframes(raw)
+
+
+def gemini_tts(text, out):
+    import requests
+    hdr = {"x-goog-api-key": os.environ["GEMINI_API_KEY"], "Content-Type": "application/json"}
+    errs = []
+    for model in GTTS_MODELS + GTTS_LEGACY:
+        legacy = "2.5" in model
+        for attempt in range(4):
+            try:
+                if legacy:
+                    r = requests.post(f"{API}/models/{model}:generateContent", headers=hdr, timeout=120, json={
+                        "contents": [{"parts": [{"text": f"Say in a {GTTS_STYLE} tone: {text}"}]}],
+                        "generationConfig": {"responseModalities": ["AUDIO"], "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": GTTS_VOICE}}}}})
+                else:
+                    r = requests.post(f"{API}/interactions", headers=hdr, timeout=120, json={
+                        "model": model,
+                        "input": [{"type": "user_input", "content": [{"type": "text", "text": text,
+                                   "annotations": [{"type": "speech_metadata", "style": GTTS_STYLE}]}]}],
+                        "response_format": {"type": "audio"},
+                        "generation_config": {"speech_config": [{"voice": GTTS_VOICE}]}})
+            except requests.RequestException as ex:
+                errs.append(f"{model}: network {str(ex)[:80]}")
+                time.sleep(5)
+                continue
+            if r.ok:
+                data = None
+                try:
+                    data = _find_audio(r.json())
+                except Exception:
+                    pass
+                if data:
+                    _save_audio(data, out)
+                    return f"gemini-tts:{model}:{GTTS_VOICE}"
+                errs.append(f"{model}: reply had no audio")
+                break
+            errs.append(f"{model}: {r.status_code} {r.text[:110]}")
+            print(f"Gemini TTS {model}: {r.status_code}", file=sys.stderr)
+            if r.status_code == 429:
+                time.sleep(min(60, 15 * (attempt + 1)))
+                continue
+            if r.status_code in (500, 502, 503, 504):
+                time.sleep(8)
+                continue
+            break                                           # 400/403/404: try the next model
+    raise RuntimeError("Gemini TTS failed: " + " | ".join(errs[-4:]))
+
+
+def _clips(spec, tmp, provider):
+    """One raw clip per scene with the given provider; returns (paths, voice name)."""
+    paths, name = [], None
     for i, sc in enumerate(spec["scenes"]):
-        raw = tmp / f"s{i:02d}.mp3"
-        wav = tmp / f"s{i:02d}.wav"
-        if fake:
-            secs = max(2.4, len(sc["say"].split()) / 2.7)
-            _run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t", f"{secs:.2f}", str(raw)])
+        if provider == "gemini":
+            p = tmp / f"{provider}_{i:02d}.wav"
+            name = gemini_tts(sc["say"], p)
+            time.sleep(1.5)
         else:
-            v = speak(sc["say"], sc["sub"], raw)
+            p = tmp / f"{provider}_{i:02d}.mp3"
+            v = speak(sc["say"], sc["sub"], p)
             if not v:
-                raise RuntimeError("no voice could be generated (edge-tts unreachable)")
-            used = used or v
-        dur = max(2.6, audio_len(raw) + 0.35 + 0.15)
-        _run(["ffmpeg", "-v", "error", "-y", "-i", str(raw), "-af", "adelay=150|150,apad", "-t", f"{dur:.3f}", "-ar", "44100", "-ac", "1", str(wav)])
+                raise RuntimeError("edge-tts: no voice could be generated")
+            name = v
+        paths.append(p)
+    return paths, name
+
+
+_TRIM = ("silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.04,areverse,"
+         "silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.04,areverse")
+
+
+def build_audio(spec, tmp, fake=False):
+    """One clip per scene -> scene durations; returns (durations, wav path, voice name)."""
+    n = len(spec["scenes"])
+    used = None
+    if fake:
+        paths = []
+        for i, sc in enumerate(spec["scenes"]):
+            p = tmp / f"fake_{i:02d}.wav"
+            secs = max(2.4, len(sc["say"].split()) / 2.7)
+            _run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t", f"{secs:.2f}", str(p)])
+            paths.append(p)
+    else:
+        paths, errs = None, []
+        for provider in (["gemini", "edge"] if TTS == "gemini" else ["edge"]):
+            try:
+                paths, used = _clips(spec, tmp, provider)
+                break
+            except Exception as ex:
+                errs.append(str(ex)[:300])
+                print(f"voice provider {provider} failed: {ex}", file=sys.stderr)
+        if not paths:
+            raise RuntimeError("no voice could be generated: " + " || ".join(errs))
+    speed = float(os.getenv("EXPLAIN_SPEED") or 1.0)
+    durs, wavs = [], []
+    for i, p in enumerate(paths):
+        t1, wav = tmp / f"t{i:02d}.wav", tmp / f"s{i:02d}.wav"
+        flt = _TRIM + (f",atempo={speed}" if abs(speed - 1.0) > 0.01 else "")
+        _run(["ffmpeg", "-v", "error", "-y", "-i", str(p), "-af", flt, "-ar", "44100", "-ac", "1", str(t1)])
+        dur = max(2.4, audio_len(t1) + 0.15 + 0.40)
+        _run(["ffmpeg", "-v", "error", "-y", "-i", str(t1), "-af", "adelay=150|150,apad", "-t", f"{dur:.3f}", "-ar", "44100", "-ac", "1", str(wav)])
         durs.append(dur)
         wavs.append(wav)
     lst = tmp / "list.txt"
