@@ -772,12 +772,17 @@ def gemini_tts(text, out):
     import requests
     hdr = {"x-goog-api-key": os.environ["GEMINI_API_KEY"], "Content-Type": "application/json"}
     errs = []
+    deadline = time.time() + 300                        # never spend more than ~5 min on the voice
     for model in GTTS_MODELS + GTTS_LEGACY:
         legacy = "2.5" in model
+        if legacy:
+            text = text.replace("<long pause>", "...")
         for attempt in range(4):
+            if time.time() > deadline:
+                raise RuntimeError("Gemini TTS: out of time | " + " | ".join(errs[-3:]))
             try:
                 if legacy:
-                    r = requests.post(f"{API}/models/{model}:generateContent", headers=hdr, timeout=120, json={
+                    r = requests.post(f"{API}/models/{model}:generateContent", headers=hdr, timeout=180, json={
                         "contents": [{"parts": [{"text": f"Say in a {GTTS_STYLE} tone: {text}"}]}],
                         "generationConfig": {"responseModalities": ["AUDIO"], "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": GTTS_VOICE}}}}})
                 else:
@@ -805,7 +810,9 @@ def gemini_tts(text, out):
             errs.append(f"{model}: {r.status_code} {r.text[:110]}")
             print(f"Gemini TTS {model}: {r.status_code}", file=sys.stderr)
             if r.status_code == 429:
-                time.sleep(min(60, 15 * (attempt + 1)))
+                if re.search(r"PerDay|per day|daily|limit: 0", r.text, re.I):
+                    break                                   # this model's free quota is gone: next model
+                time.sleep(min(60, 20 * (attempt + 1)))
                 continue
             if r.status_code in (500, 502, 503, 504):
                 time.sleep(8)
@@ -814,20 +821,71 @@ def gemini_tts(text, out):
     raise RuntimeError("Gemini TTS failed: " + " | ".join(errs[-4:]))
 
 
+def _silences(path, noise, dur):
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(path), "-af", f"silencedetect=noise={noise}dB:d={dur}", "-f", "null", "-"],
+                       capture_output=True, text=True)
+    out, start = [], None
+    for ln in r.stderr.splitlines():
+        m = re.search(r"silence_start: ([\d.]+)", ln)
+        if m:
+            start = float(m.group(1))
+        m = re.search(r"silence_end: ([\d.]+) \| silence_duration: ([\d.]+)", ln)
+        if m and start is not None:
+            out.append((start, float(m.group(1)), float(m.group(2))))
+            start = None
+    return out
+
+
+def _find_cuts(path, spec, total):
+    """Times (seconds) where one scene ends and the next begins in the one-piece narration."""
+    n = len(spec["scenes"])
+    w = [len(sc["say"].split()) + 3 for sc in spec["scenes"]]
+    cum, acc = [], 0
+    for x in w[:-1]:
+        acc += x
+        cum.append(acc / sum(w) * total)               # proportional guess (fallback)
+    for noise, dur in ((-38, 0.30), (-34, 0.22), (-30, 0.15)):
+        sil = _silences(path, noise, dur)
+        if len(sil) < n - 1:
+            continue
+        top = sorted(sorted(sil, key=lambda x: -x[2])[:n - 1])
+        cuts = [(a + b) / 2 for a, b, _ in top]
+        edges = [0.0] + cuts + [total]
+        ok = all(0.4 * (w[i] / sum(w) * total) <= edges[i + 1] - edges[i] <= 2.5 * (w[i] / sum(w) * total) + 1.0 for i in range(n))
+        if ok:
+            return cuts
+    print("scene cuts: using word-count estimate", file=sys.stderr)
+    return cum
+
+
+def _gemini_clips(spec, tmp):
+    """ONE request for the whole narration (free tier allows very few requests), then cut it into scenes."""
+    n = len(spec["scenes"])
+    text = " <long pause> ".join(sc["say"] for sc in spec["scenes"])
+    full = tmp / "gemini_full.wav"
+    name = gemini_tts(text, full)
+    total = audio_len(full)
+    cuts = _find_cuts(full, spec, total)
+    edges = [0.0] + list(cuts) + [total]
+    paths = []
+    for i in range(n):
+        p = tmp / f"gemini_{i:02d}.wav"
+        _run(["ffmpeg", "-v", "error", "-y", "-i", str(full), "-ss", f"{edges[i]:.3f}", "-to", f"{edges[i + 1]:.3f}", "-ar", "44100", "-ac", "1", str(p)])
+        paths.append(p)
+    return paths, name
+
+
 def _clips(spec, tmp, provider):
     """One raw clip per scene with the given provider; returns (paths, voice name)."""
+    if provider == "gemini":
+        return _gemini_clips(spec, tmp)
     paths, name = [], None
     for i, sc in enumerate(spec["scenes"]):
-        if provider == "gemini":
-            p = tmp / f"{provider}_{i:02d}.wav"
-            name = gemini_tts(sc["say"], p)
-            time.sleep(1.5)
-        else:
-            p = tmp / f"{provider}_{i:02d}.mp3"
-            v = speak(sc["say"], sc["sub"], p)
-            if not v:
-                raise RuntimeError("edge-tts: no voice could be generated")
-            name = v
+        p = tmp / f"{provider}_{i:02d}.mp3"
+        v = speak(sc["say"], sc["sub"], p)
+        if not v:
+            raise RuntimeError("edge-tts: no voice could be generated")
+        name = v
         paths.append(p)
     return paths, name
 
