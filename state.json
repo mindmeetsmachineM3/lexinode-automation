@@ -5,7 +5,24 @@
    "cat": "Automation and scripting",
    "date": "2026-11-01",
    "parts": 2
+  },
+  {
+   "topic": "XSS vs CSRF: Attacks & Defenses",
+   "cat": "Security basics for developers",
+   "date": "2026-11-02",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "XSS vs CSRF: Attacks & Defenses",
+  "title": "XSS vs CSRF: Attacks & Defenses",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Part 1: Diagramming XSS (executing malicious JS to exfiltrate data) vs CSRF (riding ambient cookies to forge state-changing requests), ending with: how do browsers now block CSRF without custom backend code?",
+   "Part 2: Visualizing SameSite cookie attributes (Strict, Lax, None) alongside Anti-CSRF sync-tokens to eliminate unauthorized cross-site writes."
+  ],
+  "cat": "Security basics for developers",
+  "ts": 1793609319.4542694
+ }
 }
