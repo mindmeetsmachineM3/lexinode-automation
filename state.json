@@ -19,16 +19,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "REST vs gRPC",
-  "title": "REST vs gRPC",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Part 1: Diagramming HTTP/1.1 JSON payload overhead versus HTTP/2 Protobuf binary serialization for microservices. But how do you handle real-time streaming in gRPC? Find out in Part 2!",
-   "Part 2: Visualizing HTTP/2 multiplexing, client-side streaming, and bidirectional streaming with gRPC code structures."
-  ],
-  "cat": "Backend and APIs",
-  "ts": 1793684252.8988106
- }
+ "pending": null
 }
