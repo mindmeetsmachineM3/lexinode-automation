@@ -25,16 +25,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "The DRY Principle Gone Wrong: Abstraction Trap",
-  "title": "The DRY Principle Gone Wrong: Abstraction Trap",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Illustrate a giant helper function breaking under new business requirements, ending with the rule of three for abstractions.",
-   "Demonstrate the Strategy Pattern diagram to cleanly decouple the logic, concluding with how it passes interview readability checks."
-  ],
-  "cat": "Coding tips and clean code",
-  "ts": 1793716776.1503923
- }
+ "pending": null
 }
