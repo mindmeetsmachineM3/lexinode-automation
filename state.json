@@ -23,7 +23,24 @@
    "cat": "Coding tips and clean code",
    "date": "2026-11-03",
    "parts": 2
+  },
+  {
+   "topic": "Merge K Sorted Lists",
+   "cat": "DSA and problem solving",
+   "date": "2026-11-04",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Merge K Sorted Lists",
+  "title": "Merge K Sorted Lists",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Comparing Brute Force vs Divide & Conquer vs Min-Heap to explain why Min-Heap is the optimal interview solution—see Part 2 for the heap trace!",
+   "Step-by-step visual execution of extract-min operations on the Min-Heap achieving O(N log K) time and O(K) extra space."
+  ],
+  "cat": "DSA and problem solving",
+  "ts": 1793781599.752935
+ }
 }
