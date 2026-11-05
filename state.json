@@ -41,13 +41,13 @@
   "topic": "Scaling WebSockets for Live Cricket Scores",
   "title": "Scaling WebSockets for Live Cricket Scores",
   "n": 3,
-  "next": 2,
+  "next": 3,
   "outline": [
    "Explain long polling vs WebSockets and why memory footprints matter at scale.",
    "Use Redis Pub/Sub to broadcast messages across multiple stateless WebSocket server nodes.",
    "Handle sudden reconnection storms after a wicket falls without crashing your load balancer."
   ],
   "cat": "System design",
-  "ts": 1793851527.3273818
+  "ts": 1793868252.3594797
  }
 }
