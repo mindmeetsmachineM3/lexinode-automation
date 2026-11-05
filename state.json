@@ -29,7 +29,25 @@
    "cat": "DSA and problem solving",
    "date": "2026-11-04",
    "parts": 2
+  },
+  {
+   "topic": "Scaling WebSockets for Live Cricket Scores",
+   "cat": "System design",
+   "date": "2026-11-05",
+   "parts": 3
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Scaling WebSockets for Live Cricket Scores",
+  "title": "Scaling WebSockets for Live Cricket Scores",
+  "n": 3,
+  "next": 2,
+  "outline": [
+   "Explain long polling vs WebSockets and why memory footprints matter at scale.",
+   "Use Redis Pub/Sub to broadcast messages across multiple stateless WebSocket server nodes.",
+   "Handle sudden reconnection storms after a wicket falls without crashing your load balancer."
+  ],
+  "cat": "System design",
+  "ts": 1793851527.3273818
+ }
 }
