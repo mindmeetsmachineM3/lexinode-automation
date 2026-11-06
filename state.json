@@ -41,7 +41,24 @@
    "cat": "AI and LLMs",
    "date": "2026-11-06",
    "parts": 2
+  },
+  {
+   "topic": "Stash Internals and Reflog Recovery",
+   "cat": "Git and developer workflow",
+   "date": "2026-11-06",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Stash Internals and Reflog Recovery",
+  "title": "Stash Internals and Reflog Recovery",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Explain the stash stack as a series of hidden commit objects using a pointer diagram.",
+   "Demonstrate how reflog tracks every HEAD movement to resurrect seemingly lost code."
+  ],
+  "cat": "Git and developer workflow",
+  "ts": 1793976087.3623307
+ }
 }
