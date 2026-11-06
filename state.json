@@ -43,16 +43,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Quantization (FP16 to INT4)",
-  "title": "Quantization (FP16 to INT4)",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Visualize mapping continuous floating-point weights to discrete 4-bit integer buckets.",
-   "Explain scale factors, rounding errors, and post-training quantization vs quantization-aware training."
-  ],
-  "cat": "AI and LLMs",
-  "ts": 1793937655.325681
- }
+ "pending": null
 }
