@@ -49,16 +49,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Stash Internals and Reflog Recovery",
-  "title": "Stash Internals and Reflog Recovery",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Explain the stash stack as a series of hidden commit objects using a pointer diagram.",
-   "Demonstrate how reflog tracks every HEAD movement to resurrect seemingly lost code."
-  ],
-  "cat": "Git and developer workflow",
-  "ts": 1793976087.3623307
- }
+ "pending": null
 }
