@@ -55,16 +55,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Reverse Proxy vs API Gateway",
-  "title": "Reverse Proxy vs API Gateway",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Step 1: How Nginx handles load balancing, SSL termination, and static routing as a reverse proxy.",
-   "Step 2: Adding cross-cutting concerns like rate limiting, JWT validation, and service discovery with an API Gateway."
-  ],
-  "cat": "DevOps, cloud and Docker",
-  "ts": 1794040400.3362715
- }
+ "pending": null
 }
