@@ -53,6 +53,12 @@
    "cat": "DevOps, cloud and Docker",
    "date": "2026-11-07",
    "parts": 2
+  },
+  {
+   "topic": "Database sharding vs replication",
+   "cat": "Built-in",
+   "date": "2026-11-08",
+   "parts": 1
   }
  ],
  "pending": null
