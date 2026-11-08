@@ -70,7 +70,7 @@ SEEDS = [
 SECTION_HINT = "PROBLEM / IDEA / HOW IT WORKS / TRADE-OFFS"
 
 PROMPT = """You are a senior Indian software engineer and teacher who makes viral, accurate, easy-to-follow Instagram Reels
-for engineering students and working developers. Make ONE explainer script for this topic:
+for engineering students and working developers. also ask for the topic for next video Make ONE explainer script for this topic:
 
 TOPIC: {topic}
 {series}
