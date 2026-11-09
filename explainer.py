@@ -70,7 +70,7 @@ SEEDS = [
 SECTION_HINT = "PROBLEM / IDEA / HOW IT WORKS / TRADE-OFFS"
 
 PROMPT = """You are a senior Indian software engineer and teacher who makes viral, accurate, easy-to-follow Instagram Reels
-for engineering students and working developers. also ask for the topic for next video Make ONE explainer script for this topic:
+for engineering students and working developers. also ask for the topic for next video, Make ONE explainer script for this topic:
 
 TOPIC: {topic}
 {series}
@@ -109,7 +109,12 @@ Return ONLY this JSON:
  "scenes":[{{"say":"...","sub":"...","head":"...","section":0,"visual":{{...}}}}],
  "caption":"<Roman Hinglish Instagram caption, 4-6 short lines, first line is a hook question, no hashtags, max 480 chars>",
  "comment_q":"<one question for the comments, Roman Hinglish>",
- "hashtags":["#systemdesign","...8-10 relevant tags, lowercase, no spaces"]}}
+ "hashtags":["#<very specific to THIS topic>","...6-8 tags, lowercase, no spaces"]}}
+
+HASHTAGS = LOW-COMPETITION only. Instagram shows a small post to the few people who follow/search a small tag, so a tag with thousands to a few lakh posts works; a tag with crores of posts buries the Reel.
+ - 3-4 tags VERY specific to this exact topic (e.g. #redisexplained, #cachingstrategy, #consistenthashing, #lrucache) - NOT broad ones.
+ - 2-3 niche-community tags: Indian dev audience / Hindi-tech (e.g. #codinginhindi, #techinhindi, #indiandevelopers, #desideveloper, #backendengineerindia).
+ - NEVER use huge tags: #coding #programming #tech #technology #reels #viral #trending #instagood #explore #fyp #softwareengineer #developer #ai.
 
 Do NOT repeat these recent topics: {recent}
 """
@@ -1126,6 +1131,10 @@ def render(spec, durs, audio, out_path, preview_dir=None):
 
 
 # ------------------------------------------------------------------ caption + run
+BIG_TAGS = {"#coding", "#programming", "#tech", "#technology", "#reels", "#reel", "#viral", "#trending", "#instagood", "#explore", "#fyp",
+            "#softwareengineer", "#developer", "#ai", "#instagram", "#love", "#techreels", "#software", "#code", "#coder", "#programmer"}
+
+
 def build_caption(spec):
     cap = str(spec.get("caption", "")).strip()
     cq = str(spec.get("comment_q") or "").strip()
@@ -1139,9 +1148,10 @@ def build_caption(spec):
         parts.append(f"Part {pt[0] + 1} aa raha hai 👀 Follow karo taaki miss na ho.")
     parts.append("Save karo interview se pehle 🔖 Share karo apne dev dost ko 🤝")
     parts.append(f"Follow @{HANDLE} for daily coding, system design, AI & automation.")
-    tags = spec.get("hashtags") or []
-    base = ["#coding", "#softwareengineer", "#techreels", "#programming", "#interviewprep", "#lexinode"]
-    allt = list(dict.fromkeys([t.lower() for t in tags] + base))[:14]
+    tags = [t.lower() for t in (spec.get("hashtags") or []) if isinstance(t, str)]
+    tags = [t for t in tags if t not in BIG_TAGS]               # drop crore-post tags the model may still add
+    niche = ["#codinginhindi", "#techinhindi", "#indiandevelopers", "#desideveloper", "#systemdesigninterview", "#lexinode"]
+    allt = list(dict.fromkeys(tags[:8] + niche))[:12]
     parts.append(" ".join(allt))
     return "\n\n".join(p for p in parts if p)[:2200]
 
