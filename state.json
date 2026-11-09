@@ -73,16 +73,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Write-Ahead Logging (WAL)",
-  "title": "Write-Ahead Logging (WAL)",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Diagram RAM buffer pools versus disk storage to explain why flushing dirty pages immediately is too slow, leaving a fatal vulnerability during crashes — see how we fix this in Part 2!",
-   "Trace the Write-Ahead Log (WAL) mechanism showing sequential append-only writes, and how Redo/Undo logs restore uncommitted state during reboot."
-  ],
-  "cat": "Databases and SQL",
-  "ts": 1794197446.6092913
- }
+ "pending": null
 }
