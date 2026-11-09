@@ -71,6 +71,12 @@
    "cat": "Databases and SQL",
    "date": "2026-11-09",
    "parts": 2
+  },
+  {
+   "topic": "HashMap: how it works inside",
+   "cat": "Built-in",
+   "date": "2026-11-09",
+   "parts": 1
   }
  ],
  "pending": null
