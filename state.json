@@ -85,16 +85,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "React Virtual DOM Reconciliation",
-  "title": "React Virtual DOM Reconciliation",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Diagram React's O(n) heuristic diffing algorithm comparing fiber trees—part 2 reveals why using array indices as keys breaks UI state.",
-   "Visualize how React reuses or destroys DOM nodes based on keys, demonstrating memory leaks and state bugs caused by non-unique keys."
-  ],
-  "cat": "Frontend and web performance",
-  "ts": 1794283327.65235
- }
+ "pending": null
 }
