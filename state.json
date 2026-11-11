@@ -91,16 +91,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Database Migration Scripting: Zero-Downtime Schema Updates",
-  "title": "Database Migration Scripting: Zero-Downtime Schema Updates",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Implementing the expand phase by adding the new column and dual-writing from the application layer, ending with how to trigger backfill scripts.",
-   "Executing the contract phase by safely dropping the old column after all dependent services are upgraded."
-  ],
-  "cat": "Automation and scripting",
-  "ts": 1794324633.368042
- }
+ "pending": null
 }
