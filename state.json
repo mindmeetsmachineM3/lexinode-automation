@@ -97,16 +97,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Rate Limiting: Token Bucket vs Leaky Bucket",
-  "title": "Rate Limiting: Token Bucket vs Leaky Bucket",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Compare Token Bucket and Leaky Bucket using animated tank diagrams showing burst handling.",
-   "Show how to implement a distributed Token Bucket using Redis and Lua scripts."
-  ],
-  "cat": "Security basics for developers",
-  "ts": 1794387265.40108
- }
+ "pending": null
 }
