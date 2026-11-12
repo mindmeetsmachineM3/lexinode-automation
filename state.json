@@ -95,7 +95,24 @@
    "cat": "Security basics for developers",
    "date": "2026-11-11",
    "parts": 2
+  },
+  {
+   "topic": "Designing Idempotent Payment APIs",
+   "cat": "Backend and APIs",
+   "date": "2026-11-12",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Designing Idempotent Payment APIs",
+  "title": "Designing Idempotent Payment APIs",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Part 1 breaks down Idempotency Keys using an API gateway diagram that stores unique transaction keys in Redis—but what happens if two identical requests hit the server at the exact same millisecond?",
+   "Part 2 reveals atomic distributed locking with Redis Redlock and DB unique constraints to safely reject concurrent race conditions and guarantee single execution."
+  ],
+  "cat": "Backend and APIs",
+  "ts": 1794500971.4169102
+ }
 }
