@@ -101,7 +101,25 @@
    "cat": "Backend and APIs",
    "date": "2026-11-12",
    "parts": 2
+  },
+  {
+   "topic": "CQRS (Command Query Responsibility Segregation)",
+   "cat": "Coding tips and clean code",
+   "date": "2026-11-13",
+   "parts": 3
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "CQRS (Command Query Responsibility Segregation)",
+  "title": "CQRS (Command Query Responsibility Segregation)",
+  "n": 3,
+  "next": 2,
+  "outline": [
+   "Part 1: Diagram read/write asymmetry and why a single domain model fails under high-scale reads, hook to Part 2 for data model separation.",
+   "Part 2: Diagram Write-Model emitting events to sync a flattened Read-Model DB asynchronously via event handlers, hook to Part 3 for consistency trade-offs.",
+   "Part 3: Diagram handling eventual consistency in code using optimistic UI updates and fallback polling, hook to system design mastery."
+  ],
+  "cat": "Coding tips and clean code",
+  "ts": 1794567663.6289694
+ }
 }
