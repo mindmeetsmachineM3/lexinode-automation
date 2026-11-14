@@ -115,16 +115,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Lowest Common Ancestor (LCA) in Binary Trees",
-  "title": "Lowest Common Ancestor (LCA) in Binary Trees",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Exploiting BST properties to find the split point in O(H) time visually, but what if the tree is completely unbalanced or a generic tree? See Part 2!",
-   "Using recursive bottom-up subtree returns to trace the LCA in a standard binary tree in a single traversal."
-  ],
-  "cat": "DSA and problem solving",
-  "ts": 1794651965.9056232
- }
+ "pending": null
 }
