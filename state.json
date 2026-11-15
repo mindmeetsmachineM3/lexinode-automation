@@ -121,16 +121,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Distributed Locking with Redis (Redlock)",
-  "title": "Distributed Locking with Redis (Redlock)",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Diagram single-node Redis `SETNX` with auto-expire TTL to handle basic race conditions, but see why single-node locks fail if the Redis master crashes before replica sync.",
-   "Implement the multi-node Redlock consensus algorithm to safely acquire fault-tolerant locks across independent Redis nodes."
-  ],
-  "cat": "System design",
-  "ts": 1794682687.4028661
- }
+ "pending": null
 }
