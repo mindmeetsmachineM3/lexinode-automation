@@ -119,7 +119,24 @@
    "cat": "System design",
    "date": "2026-11-14",
    "parts": 2
+  },
+  {
+   "topic": "Self-Attention Mechanism in Transformers",
+   "cat": "AI and LLMs",
+   "date": "2026-11-15",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Self-Attention Mechanism in Transformers",
+  "title": "Self-Attention Mechanism in Transformers",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Part 1 explains how input token embeddings are multiplied by learned weight matrices to generate Query (Q), Key (K), and Value (V) vectors for each word—so how do these matrices calculate attention scores?",
+   "Part 2 visualizes the Q times K-transpose dot product, scaling by dimension square-root, softmax normalization, and multiplying by V to form contextual embeddings."
+  ],
+  "cat": "AI and LLMs",
+  "ts": 1794755267.7962875
+ }
 }
