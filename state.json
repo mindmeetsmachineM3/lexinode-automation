@@ -131,7 +131,24 @@
    "cat": "Git and developer workflow",
    "date": "2026-11-16",
    "parts": 2
+  },
+  {
+   "topic": "Horizontal Pod Autoscaler (HPA) Tuning",
+   "cat": "DevOps, cloud and Docker",
+   "date": "2026-11-18",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Horizontal Pod Autoscaler (HPA) Tuning",
+  "title": "Horizontal Pod Autoscaler (HPA) Tuning",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Explain the Metrics Server polling loop and how HPA calculates desired replica counts based on CPU and custom metrics.",
+   "Configure stabilization windows and custom metrics to eliminate scale-up jitter during flash sales."
+  ],
+  "cat": "DevOps, cloud and Docker",
+  "ts": 1795038675.1484091
+ }
 }
