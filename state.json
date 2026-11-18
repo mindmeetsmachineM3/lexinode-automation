@@ -133,16 +133,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Git Rebase vs Git Merge",
-  "title": "Git Rebase vs Git Merge",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Part 1: Visualizing non-fast-forward merge commits versus rebasing onto main, and why rebase keeps a linear history—but wait, what breaks when you rebase shared branches?",
-   "Part 2: How interactive rebase cleans up commit logs before PR reviews and the golden rule to prevent force-pushing disasters."
-  ],
-  "cat": "Git and developer workflow",
-  "ts": 1794827346.6932452
- }
+ "pending": null
 }
