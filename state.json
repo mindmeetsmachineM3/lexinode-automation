@@ -145,16 +145,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "File System Inodes",
-  "title": "File System Inodes",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Present inode structure with pointers to direct, indirect blocks, then tease block allocation strategies.",
-   "Explain contiguous, linked, and indexed allocation with diagrams, illustrating fragmentation trade‑offs."
-  ],
-  "cat": "Computer science fundamentals (OS, networking)",
-  "ts": 1795108452.619858
- }
+ "pending": null
 }
