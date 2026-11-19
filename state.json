@@ -137,7 +137,24 @@
    "cat": "DevOps, cloud and Docker",
    "date": "2026-11-18",
    "parts": 2
+  },
+  {
+   "topic": "File System Inodes",
+   "cat": "Computer science fundamentals (OS, networking)",
+   "date": "2026-11-19",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "File System Inodes",
+  "title": "File System Inodes",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Present inode structure with pointers to direct, indirect blocks, then tease block allocation strategies.",
+   "Explain contiguous, linked, and indexed allocation with diagrams, illustrating fragmentation trade‑offs."
+  ],
+  "cat": "Computer science fundamentals (OS, networking)",
+  "ts": 1795108452.619858
+ }
 }
