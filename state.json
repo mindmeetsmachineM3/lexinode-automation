@@ -157,16 +157,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "How B+ Tree Database Indexes Work",
-  "title": "How B+ Tree Database Indexes Work",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Part 1: Diagram B+ Tree internal nodes versus leaf nodes containing linked records, showing logarithmic lookups instead of full table scans. But why use B+ Trees over Hash indexes? Watch Part 2 to find out.",
-   "Part 2: Explain range query optimization using leaf node pointers (`WHERE age > 21`) and visual comparisons showing why Hash indexes fail for range searches."
-  ],
-  "cat": "Databases and SQL",
-  "ts": 1795192740.00425
- }
+ "pending": null
 }
