@@ -155,7 +155,24 @@
    "cat": "Databases and SQL",
    "date": "2026-11-20",
    "parts": 2
+  },
+  {
+   "topic": "Browser Rendering Pipeline: Reflow vs Repaint",
+   "cat": "Frontend and web performance",
+   "date": "2026-11-21",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Browser Rendering Pipeline: Reflow vs Repaint",
+  "title": "Browser Rendering Pipeline: Reflow vs Repaint",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Explain the DOM to RenderTree path and how JavaScript mutations force synchronous layout recalculations. (Hook: Why does reading layout properties right after writing them kill frame rates?)",
+   "Draw out Layout Thrashing visually and share practical batching fixes using requestAnimationFrame. (Hook: Ready to optimize your CSS selectors next?)"
+  ],
+  "cat": "Frontend and web performance",
+  "ts": 1795258861.3890839
+ }
 }
