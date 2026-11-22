@@ -169,16 +169,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Distributed Background Worker Queues",
-  "title": "Distributed Background Worker Queues",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Part 1: Diagram the Producer-Broker-Worker pipeline, explaining message visibility timeouts and worker heartbeats—hooking into what happens when a script worker crashes mid-task.",
-   "Part 2: Diagram Dead Letter Queue (DLQ) routing, task idempotency keys, and result backend synchronization."
-  ],
-  "cat": "Automation and scripting",
-  "ts": 1795292532.407249
- }
+ "pending": null
 }
