@@ -175,16 +175,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "OAuth 2.0 PKCE Flow for Public Clients",
-  "title": "OAuth 2.0 PKCE Flow for Public Clients",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Part 1: Diagramming the standard OAuth 2.0 Authorization Code flow and revealing why public client redirect URIs are vulnerable to code interception—part 2 introduces PKCE.",
-   "Part 2: How PKCE uses dynamic Code Verifier and Code Challenge hashes to cryptographically prove the identity of the client exchanging the authorization code."
-  ],
-  "cat": "Security basics for developers",
-  "ts": 1795362578.373918
- }
+ "pending": null
 }
