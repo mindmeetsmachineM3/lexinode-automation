@@ -181,16 +181,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Handling Race Conditions in Inventory Checkout APIs",
-  "title": "Handling Race Conditions in Inventory Checkout APIs",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Diagram the race condition between read-check inventory and write-update decrement in a standard API.",
-   "Demonstrate atomic SQL updates and optimistic locking using version numbers with a hook on Redis alternatives."
-  ],
-  "cat": "Backend and APIs",
-  "ts": 1795437988.800974
- }
+ "pending": null
 }
