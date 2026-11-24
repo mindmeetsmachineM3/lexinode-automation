@@ -179,7 +179,24 @@
    "cat": "Backend and APIs",
    "date": "2026-11-23",
    "parts": 2
+  },
+  {
+   "topic": "Composition vs Inheritance: Fragile Base Class",
+   "cat": "Coding tips and clean code",
+   "date": "2026-11-24",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Composition vs Inheritance: Fragile Base Class",
+  "title": "Composition vs Inheritance: Fragile Base Class",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Part 1: Diagram the 'Fragile Base Class' dilemma where modifying an internal parent method silently breaks a subclass override—so how do we reuse behavior safely?",
+   "Part 2: Restructure the hierarchy using composition with interface forwarding, showing how isolated wrappers allow independent unit testing."
+  ],
+  "cat": "Coding tips and clean code",
+  "ts": 1795482989.3935504
+ }
 }
