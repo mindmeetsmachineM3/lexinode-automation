@@ -185,7 +185,24 @@
    "cat": "Coding tips and clean code",
    "date": "2026-11-24",
    "parts": 2
+  },
+  {
+   "topic": "Trie (Prefix Tree) Fundamentals",
+   "cat": "DSA and problem solving",
+   "date": "2026-11-24",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Trie (Prefix Tree) Fundamentals",
+  "title": "Trie (Prefix Tree) Fundamentals",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Diagram character nodes linking together to demonstrate how shared prefixes drastically save space, but how do we handle word end flags and lookups? Learn in Part 2!",
+   "Walk through character insertion, word termination flags, and path traversal diagrams to retrieve dynamic top search predictions."
+  ],
+  "cat": "DSA and problem solving",
+  "ts": 1795547140.533503
+ }
 }
