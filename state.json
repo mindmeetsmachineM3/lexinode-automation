@@ -197,7 +197,24 @@
    "cat": "System design",
    "date": "2026-11-25",
    "parts": 2
+  },
+  {
+   "topic": "RAG Pipeline Architecture",
+   "cat": "AI and LLMs",
+   "date": "2026-11-25",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "RAG Pipeline Architecture",
+  "title": "RAG Pipeline Architecture",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Part 1: Visualizing document chunking, embedding generation, and vector search retrieval—ending with why top-k retrieval often injects noise that causes hallucinations.",
+   "Part 2: Adding semantic re-ranking, lost-in-the-middle context structuring, and query rewriting to produce production-grade factual answers."
+  ],
+  "cat": "AI and LLMs",
+  "ts": 1795647170.7150645
+ }
 }
