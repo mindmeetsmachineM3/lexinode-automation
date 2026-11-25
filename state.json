@@ -191,7 +191,24 @@
    "cat": "DSA and problem solving",
    "date": "2026-11-24",
    "parts": 2
+  },
+  {
+   "topic": "Snowflake Distributed ID Generator",
+   "cat": "System design",
+   "date": "2026-11-25",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "Snowflake Distributed ID Generator",
+  "title": "Snowflake Distributed ID Generator",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Why auto-increment database IDs fail in distributed systems and the core requirements for scalable 64-bit IDs (Part 2 breaks down the exact bit layout).",
+   "Bit breakdown of Twitter Snowflake (Timestamp, Worker ID, Sequence number) and handling system clock skew gracefully."
+  ],
+  "cat": "System design",
+  "ts": 1795610744.301132
+ }
 }
