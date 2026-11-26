@@ -211,16 +211,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Git Merge Strategies: Recursive vs Octopus vs Ours",
-  "title": "Git Merge Strategies: Recursive vs Octopus vs Ours",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Explain the three-way merge base calculation used by the recursive strategy.",
-   "Compare it with alternative strategies like octopus and custom driver configurations."
-  ],
-  "cat": "Git and developer workflow",
-  "ts": 1795716255.2476695
- }
+ "pending": null
 }
