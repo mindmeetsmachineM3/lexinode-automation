@@ -217,16 +217,5 @@
    "parts": 2
   }
  ],
- "pending": {
-  "topic": "Blue-Green vs Canary Deployments",
-  "title": "Blue-Green vs Canary Deployments",
-  "n": 2,
-  "next": 2,
-  "outline": [
-   "Diagram Blue-Green deployments with a load balancer switch, explaining instant rollback, ending with the limitation on database state synchronization.",
-   "Diagram Canary deployments routing 5% traffic via service mesh (like Istio), showing metric observation before full rollout."
-  ],
-  "cat": "DevOps, cloud and Docker",
-  "ts": 1795781648.0300937
- }
+ "pending": null
 }
