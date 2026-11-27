@@ -215,7 +215,24 @@
    "cat": "DevOps, cloud and Docker",
    "date": "2026-11-27",
    "parts": 2
+  },
+  {
+   "topic": "TCP Handshake and TIME_WAIT State",
+   "cat": "Computer science fundamentals (OS, networking)",
+   "date": "2026-11-27",
+   "parts": 2
   }
  ],
- "pending": null
+ "pending": {
+  "topic": "TCP Handshake and TIME_WAIT State",
+  "title": "TCP Handshake and TIME_WAIT State",
+  "n": 2,
+  "next": 2,
+  "outline": [
+   "Diagram the SYN/ACK 3-way handshake and FIN/ACK 4-way teardown to show asymmetric connection closing, then ask: why can't the connection close immediately after the last ACK?",
+   "Diagram the 2MSL TIME_WAIT state protecting against delayed phantom packets, explaining how high connection churn exhausts ephemeral ports and how SO_REUSEADDR helps."
+  ],
+  "cat": "Computer science fundamentals (OS, networking)",
+  "ts": 1795818287.3007905
+ }
 }
